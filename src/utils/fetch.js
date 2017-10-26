@@ -6,7 +6,7 @@ import { getToken } from '@/utils/auth'
 // 创建axios实例
 const service = axios.create({
   baseURL: process.env.BASE_API, // api的base_url
-  timeout: 15000                  // 请求超时时间
+  timeout: 5000                  // 请求超时时间
 })
 
 // request拦截器
@@ -14,11 +14,15 @@ service.interceptors.request.use(config => {
   if (store.getters.token) {
     config.headers['X-Token'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
   }
+  console.info("request:" + config);
+  console.info("token:" + getToken());
   return config
 }, error => {
   // Do something with request error
+  console.log(123+ " err" ); // for debug
   console.log(error) // for debug
-  Promise.reject(error)
+  // Promise.reject(error)
+  return config
 })
 
 // respone拦截器
@@ -27,7 +31,15 @@ service.interceptors.response.use(
   /**
   * code为非20000是抛错 可结合自己业务进行修改
   */
-    const res = response.data
+    const res = response.data;
+    if (typeof res.code === 'undefined'){
+      res.code = 20000;
+    };
+    if (res.code === 1){
+      res.code = 20000;
+    };
+    console.log("response.code=" + res.code);
+    console.log("response=" + JSON.stringify(response));
     if (res.code !== 20000) {
       Message({
         message: res.data,
@@ -37,6 +49,7 @@ service.interceptors.response.use(
 
       // 50008:非法的token; 50012:其他客户端登录了;  50014:Token 过期了;
       if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
+        console.log(555 + " code=" + res.code);
         MessageBox.confirm('你已被登出，可以取消继续留在该页面，或者重新登录', '确定登出', {
           confirmButtonText: '重新登录',
           cancelButtonText: '取消',
@@ -48,6 +61,7 @@ service.interceptors.response.use(
         })
       }
       return Promise.reject('error')
+      // return response.data
     } else {
       return response.data
     }
@@ -56,7 +70,7 @@ service.interceptors.response.use(
     console.log('err' + error)// for debug
     Message({
       message: error.message,
-      type: 'error',
+      type: 'error2',
       duration: 5 * 1000
     })
     return Promise.reject(error)

@@ -5,10 +5,18 @@ import locale from 'element-ui/lib/locale/lang/en'
 import App from './App'
 import router from './router'
 import store from './store'
+import Highlight from './utils/highlight'
 import '@/icons' // icon
 import '@/permission' // 权限
+import hljs from 'highlight.js';
 
-Vue.use(ElementUI, { locale })
+Vue.directive('hljs', el => {
+  let blocks = el.querySelectorAll('pre code');
+  Array.prototype.forEach.call(blocks, hljs.highlightBlock);
+});
+
+
+Vue.use(ElementUI, {locale}, Highlight)
 
 Vue.config.productionTip = false
 
@@ -17,5 +25,5 @@ new Vue({
   router,
   store,
   template: '<App/>',
-  components: { App }
+  components: {App}
 })
